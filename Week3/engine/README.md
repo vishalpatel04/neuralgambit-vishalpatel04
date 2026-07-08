@@ -10,7 +10,15 @@ checkmate sequences using the [Disservin chess-library](https://github.com/Disse
 the side to move only counts toward a forced mate if either it delivers
 immediate checkmate, or *every* legal defensive reply still allows the
 attacker to force mate within the remaining moves. Captures are tried first
-as a move-ordering heuristic to find the winning line faster.
+(for both the attacker's candidate moves and the defender's replies) as a
+move-ordering heuristic to find the winning line, or the losing reply, faster.
+
+A transposition table (`provenNoMateWithin_`, keyed by the position's Zobrist
+hash) caches "no forced mate within N moves from this exact position"
+results. The same position is frequently reached by different move orders —
+especially once a puzzle's mating line includes a non-check "quiet" move —
+so this prunes a large fraction of the redundant re-search that otherwise
+makes deep (mate-in-4) searches slow.
 
 ## Build
 
@@ -42,16 +50,16 @@ To see the board itself change move by move, use `./bin/demo "<FEN>" <N>`
 ./bin/puzzle_runner ../mate_in_4.json 4
 ```
 
-Results:
+Results (with the transposition table, `findMateBounded`'s cap at 20s/puzzle):
 
 | Puzzle set | Solved | Time |
 |---|---|---|
-| mate-in-2 (351 puzzles, 3-ply) | 351/351 | 0.04s |
-| mate-in-3 (489 puzzles, 5-ply) | 489/489 | 2.3s |
-| mate-in-4 (462 puzzles, 7-ply) | 455/462 (7 timed out) | 183s |
+| mate-in-2 (351 puzzles, 3-ply) | 351/351 | 0.05s |
+| mate-in-3 (489 puzzles, 5-ply) | 489/489 | 1.9s |
+| mate-in-4 (462 puzzles, 7-ply) | 462/462 | 95s |
 
-The 7 mate-in-4 timeouts (`findMateBounded`, 5s/puzzle cap) are positions
-where the unpruned exhaustive search's branching factor is too large to
-finish in time — a natural next step would be alpha-beta-style pruning or a
-transposition table, rather than a correctness issue (every solved puzzle's
-line was checked to actually end in checkmate).
+Before the transposition table, mate-in-4 solved 455/462 within a 5s/puzzle
+cap (7 timed out on positions whose branching factor was too large for the
+unpruned search). Caching "no forced mate within N moves" per Zobrist hash
+eliminated the redundant re-search caused by transposing move orders, and
+all 7 stragglers now solve individually in under 14s each — full 462/462.

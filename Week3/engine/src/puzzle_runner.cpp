@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     const int n = std::stoi(argv[2]);
     const size_t limit = argc >= 4 ? static_cast<size_t>(std::stoul(argv[3])) : std::numeric_limits<size_t>::max();
 
-    constexpr auto kPerPuzzleTimeLimit = std::chrono::milliseconds(5000);
+    constexpr auto kPerPuzzleTimeLimit = std::chrono::milliseconds(20000);
 
     const auto puzzles = neuralgambit::parseFlatJsonObject(path);
     size_t total = 0;

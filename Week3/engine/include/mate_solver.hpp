@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "chess.hpp"
@@ -68,6 +70,15 @@ class MateSolver {
     bool timedOut_ = false;
     int nodesSinceClockCheck_ = 0;
 
+    // Transposition table: for a given position (Zobrist hash, which already
+    // folds in side to move, castling rights and en-passant square), records
+    // the largest movesLeft budget for which we've proven no forced mate
+    // exists. The same position is frequently reached by different move
+    // orders (transpositions), especially once a puzzle's mating line
+    // includes a non-check "quiet" move, so caching failures here prunes a
+    // large fraction of the redundant re-search that made mate-in-4 slow.
+    std::unordered_map<std::uint64_t, int> provenNoMateWithin_;
+
     // Checking the clock on every node is wasteful, so it's amortized over
     // batches of nodes.
     bool deadlineExceeded() {
@@ -92,6 +103,16 @@ class MateSolver {
     std::optional<std::vector<chess::Move>> search(int movesLeft) {
         if (deadlineExceeded()) return std::nullopt;
 
+        const std::uint64_t hash = board_.hash();
+        const auto cached = provenNoMateWithin_.find(hash);
+        if (cached != provenNoMateWithin_.end() && movesLeft <= cached->second) {
+            // Already proved no forced mate from this exact position (same
+            // side to move, castling rights, en-passant square) within at
+            // least this many moves, via some other move order that
+            // transposed into it.
+            return std::nullopt;
+        }
+
         chess::Movelist moves;
         chess::movegen::legalmoves(moves, board_);
         orderMoves(moves, board_);
@@ -103,6 +124,7 @@ class MateSolver {
 
             chess::Movelist replies;
             chess::movegen::legalmoves(replies, board_);
+            orderMoves(replies, board_);
             const bool inCheck = board_.inCheck();
             const bool noReplies = replies.empty();
 
@@ -145,6 +167,10 @@ class MateSolver {
             board_.unmakeMove(move);
         }
 
+        if (!timedOut_) {
+            auto& best = provenNoMateWithin_[hash];
+            best = std::max(best, movesLeft);
+        }
         return std::nullopt;
     }
 };
