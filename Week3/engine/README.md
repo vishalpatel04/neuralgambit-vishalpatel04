@@ -31,6 +31,9 @@ Produces `bin/mate_solver` and `bin/puzzle_runner`.
 
 Moves are printed in UCI notation (matching the engine's UCI protocol).
 
+To see the board itself change move by move, use `./bin/demo "<FEN>" <N>`
+(defaults to the mate-in-2 example above if no arguments are given).
+
 ## Verifying against the puzzle sets
 
 ```sh
