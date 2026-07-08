@@ -159,13 +159,21 @@ class History:
         return boards_str
 
     def is_win(self):
-        # Feel free to implement this in anyway if needed
-        pass
+        for i in self.active_board_stats:
+            if i == 1:
+                return False
+        return 1 if self.current_player == 2 else 2
 
     def get_valid_actions(self):
-        # Feel free to implement this in anyway if needed
-        pass
-
+        rList = []
+        for i in range(self.num_boards):
+            if self.active_board_stats[i] == 1:
+                for j in range(9):
+                    num = 9*i+j
+                    if self.boards[i][j] == '0':
+                        rList.append(num)
+        return rList
+      
     def is_terminal_history(self):
         # Feel free to implement this in anyway if needed
         pass
