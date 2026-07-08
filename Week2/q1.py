@@ -74,33 +74,86 @@ class History:
         return board
 
     def is_win(self):
-        # check if the board position is a win for either players
-        # Feel free to implement this in anyway if needed
-        pass
+        win=[
+
+    [0, 1, 2],
+
+    [3, 4, 5],
+
+    [6, 7, 8],
+
+    [0, 3, 6],
+
+    [1, 4, 7],
+
+    [2, 5, 8],
+
+    [0, 4, 8],
+
+    [2, 4, 6]
+
+]
+        board = self.get_board()
+        Result='n'
+        for i in range(0,7):
+            if(board[win[i][0]]==board[win[i][1]] and board[win[i][0]]==board[win[i][2]]):
+                Result=board[win[i][1]]
+                break
+        return Result
 
     def is_draw(self):
-        # check if the board position is a draw
-        # Feel free to implement this in anyway if needed
-        pass
+        win=[
+
+    [0, 1, 2],
+
+    [3, 4, 5],
+
+    [6, 7, 8],
+
+    [0, 3, 6],
+
+    [1, 4, 7],
+
+    [2, 5, 8],
+
+    [0, 4, 8],
+
+    [2, 4, 6]
+
+]
+        board = self.get_board()
+        Result=True
+        for i in range(0,7):
+            if(board[win[i][0]]==board[win[i][1]] and board[win[i][0]]==board[win[i][2]]):
+                Result=False
+                break
+        return Result
 
     def get_valid_actions(self):
-        # get the empty squares from the board
-        # Feel free to implement this in anyway if needed
-        pass
+        return [i for i in range(9) if self.board[i] == '0']
 
     def is_terminal_history(self):
-        # check if the history is a terminal history
-        # Feel free to implement this in anyway if needed
-        pass
-
+        isWin=self.is_win()
+        if(isWin !='n'):
+            return True
+        else:
+            isDraw=self.is_draw()
+            if(isDraw):
+                return True
+        return False
+        
     def get_utility_given_terminal_history(self):
-        # Feel free to implement this in anyway if needed
-        pass
+        isWin=self.is_win()
+        if(isWin =='x'):
+            return 1
+        elif(isWin =='o'):
+            return -1
+        else:
+            return 0
 
     def update_history(self, action):
-        # In case you need to create a deepcopy and update the history obj to get the next history object.
-        # Feel free to implement this in anyway if needed
-        pass
+      new_history = self.history + [action]
+      return History(new_history)
 
 
 def backward_induction(history_obj):
